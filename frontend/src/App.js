@@ -7,14 +7,55 @@ function App() {
   const [message, setMessage] = useState("");
   const [page, setPage] = useState("login");
 
-  const handleLogin = async () => {
+const handleLogin = async () => {
     try {
-      const response = await fetch("http://127.0.0.1:5000/");
+      // send a POST request with the username and password
+      const response = await fetch("http://127.0.0.1:5000/login", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({ username, password }),
+      });
+
       const data = await response.json();
-      setMessage(data.status);
+
+      // if the backend says success change the page to the cooking path
+      if (response.ok) {
+        setMessage(data.message);
+        setPage("cooking"); 
+      } else {
+        setMessage(data.message);
+      }
     } catch (error) {
       console.error(error);
-      setMessage("Failed to connect to backend");
+      setMessage("Failed to connect to backend. Is Flask running?");
+    }
+  };
+
+const handleRegister = async () => {
+    try {
+      const response = await fetch("http://127.0.0.1:5000/register", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({ username, password }),
+      });
+
+      const data = await response.json();
+
+      if (response.ok) {
+        // show the message and clear the password so they can log in
+        setMessage(data.message);
+        setPassword(""); 
+      } else {
+        // failed
+        setMessage(data.message);
+      }
+    } catch (error) {
+      console.error(error);
+      setMessage("Failed to connect to backend.");
     }
   };
 
@@ -265,6 +306,24 @@ function App() {
                 onClick={handleLogin}
               >
                 LOGIN
+              </button>
+
+              <button
+                style={{
+                  width: "100%",
+                  padding: "14px",
+                  marginTop: "12px",
+                  background: "transparent",
+                  color: "#674303",
+                  border: "2px solid #674303",
+                  borderRadius: "10px",
+                  fontSize: "16px",
+                  fontWeight: "bold",
+                  cursor: "pointer",
+                }}
+                onClick={handleRegister}
+              >
+                REGISTER
               </button>
 
               <p
