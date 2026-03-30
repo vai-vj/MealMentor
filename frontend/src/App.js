@@ -7,7 +7,7 @@ function App() {
   const [message, setMessage] = useState("");
   const [page, setPage] = useState("login");
 
-const handleLogin = async () => {
+  const handleLogin = async () => {
     try {
       // send a POST request with the username and password
       const response = await fetch("http://127.0.0.1:5000/login", {
@@ -23,7 +23,7 @@ const handleLogin = async () => {
       // if the backend says success change the page to the cooking path
       if (response.ok) {
         setMessage(data.message);
-        setPage("cooking"); 
+        setPage("cooking");
       } else {
         setMessage(data.message);
       }
@@ -33,7 +33,7 @@ const handleLogin = async () => {
     }
   };
 
-const handleRegister = async () => {
+  const handleRegister = async () => {
     try {
       const response = await fetch("http://127.0.0.1:5000/register", {
         method: "POST",
@@ -48,7 +48,7 @@ const handleRegister = async () => {
       if (response.ok) {
         // show the message and clear the password so they can log in
         setMessage(data.message);
-        setPassword(""); 
+        setPassword("");
       } else {
         // failed
         setMessage(data.message);
@@ -57,6 +57,14 @@ const handleRegister = async () => {
       console.error(error);
       setMessage("Failed to connect to backend.");
     }
+  };
+
+  //logout functionality
+  const handleLogout = () => {
+    setUsername("");
+    setPassword("");
+    setMessage("You have been logged out.");
+    setPage("login");
   };
 
   if (page === "cooking") {
@@ -79,17 +87,23 @@ const handleRegister = async () => {
 
           <div style={{ display: "flex", gap: "30px" }}>
             <button
-              onClick={() => setPage("login")}
-              style={{ background: "none", border: "none", cursor: "pointer" }}
-            >
-              Login
-            </button>
-
-            <button
               onClick={() => setPage("cooking")}
               style={{ background: "none", border: "none", cursor: "pointer" }}
             >
               Cooking Path
+            </button>
+
+            <button
+              onClick={handleLogout}
+              style={{
+                background: "none",
+                border: "none",
+                cursor: "pointer",
+                color: "#6B3E1F",
+                fontWeight: "bold",
+              }}
+            >
+              Logout
             </button>
           </div>
         </nav>
