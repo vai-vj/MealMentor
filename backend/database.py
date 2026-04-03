@@ -13,6 +13,20 @@ def init_db():
             current_level INTEGER DEFAULT 1
         )
     ''')
+
+    #create the recipes table
+    cursor.execute('''
+        CREATE TABLE IF NOT EXISTS recipes (
+            id INTEGER PRIMARY KEY AUTOINCREMENT,
+            name TEXT NOT NULL,
+            ingredients TEXT,
+            ingredients_raw TEXT,
+            steps TEXT,
+            servings INTEGER,
+            serving_size INTEGER,
+            tags TEXT
+        )
+    ''')
     
     conn.commit()
     conn.close()
