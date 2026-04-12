@@ -1,11 +1,14 @@
 import { useState } from "react";
 import CookingPath from "./CookingPath";
+import AdminPage from "./AdminMain";
 
 function App() {
   const [username, setUsername] = useState("");
   const [password, setPassword] = useState("");
   const [message, setMessage] = useState("");
   const [page, setPage] = useState("login");
+
+  console.log("AdminPage import is:", AdminPage);
 
   const handleLogin = async () => {
     try {
@@ -22,8 +25,18 @@ function App() {
 
       // if the backend says success change the page to the cooking path
       if (response.ok) {
-        setMessage(data.message);
-        setPage("cooking");
+
+        //HARDCODED ADMIN LOGIN to admin page
+        if (username === "admin" && password === "admin123") {
+          setMessage("Admin login successful.");
+          setPage("admin");
+        }
+        //General user login to cooking path
+        else{
+          setMessage(data.message);
+          setPage("cooking");
+        }
+        
       } else {
         setMessage(data.message);
       }
@@ -66,6 +79,53 @@ function App() {
     setMessage("You have been logged out.");
     setPage("login");
   };
+
+  if (page === "admin") {
+    return (
+      <div>
+        <nav
+          style={{
+            height: "80px",
+            display: "flex",
+            alignItems: "center",
+            justifyContent: "space-between",
+            padding: "0 40px",
+            backgroundColor: "#FFF8E8",
+            borderBottom: "1px solid #E6C68E",
+          }}
+        >
+          <div style={{ fontSize: "24px", fontWeight: "bold", color: "#6B3E1F" }}>
+            Meal Mentors
+          </div>
+
+          <div style={{ display: "flex", gap: "30px" }}>
+            <button
+              onClick={() => setPage("cooking")}
+              style={{ background: "none", border: "none", cursor: "pointer" }}
+            >
+              User View
+            </button>
+
+            <button
+              onClick={handleLogout}
+              style={{
+                background: "none",
+                border: "none",
+                cursor: "pointer",
+                color: "#6B3E1F",
+                fontWeight: "bold",
+              }}
+            >
+              Logout
+            </button>
+          </div>
+        </nav>
+
+        <AdminPage />
+      </div>
+    );
+  }
+
 
   if (page === "cooking") {
     return (
@@ -138,12 +198,12 @@ function App() {
             Login
           </button>
 
-          <button
+          {/* <button
             onClick={() => setPage("cooking")}
             style={{ background: "none", border: "none", cursor: "pointer" }}
           >
             Cooking Path
-          </button>
+          </button> */}
         </div>
       </nav>
 
