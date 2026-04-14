@@ -9,7 +9,6 @@ function App() {
 
   const handleLogin = async () => {
     try {
-      // send a POST request with the username and password
       const response = await fetch("http://127.0.0.1:5000/login", {
         method: "POST",
         headers: {
@@ -20,8 +19,11 @@ function App() {
 
       const data = await response.json();
 
-      // if the backend says success change the page to the cooking path
       if (response.ok) {
+        // --- NEW: SESSION STORAGE SHORTCUT ---
+        localStorage.setItem('mealMentorUserId', data.user_id);
+        localStorage.setItem('mealMentorUserRole', data.role); 
+        
         setMessage(data.message);
         setPage("cooking");
       } else {
@@ -46,11 +48,9 @@ function App() {
       const data = await response.json();
 
       if (response.ok) {
-        // show the message and clear the password so they can log in
         setMessage(data.message);
         setPassword("");
       } else {
-        // failed
         setMessage(data.message);
       }
     } catch (error) {
@@ -59,14 +59,18 @@ function App() {
     }
   };
 
-  //logout functionality
   const handleLogout = () => {
+    // --- NEW: CLEAR SESSION ON LOGOUT ---
+    localStorage.removeItem('mealMentorUserId');
+    localStorage.removeItem('mealMentorUserRole');
+    
     setUsername("");
     setPassword("");
     setMessage("You have been logged out.");
     setPage("login");
   };
 
+  // UI rendering logic remains the same below...
   if (page === "cooking") {
     return (
       <div>
