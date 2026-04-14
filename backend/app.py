@@ -19,16 +19,20 @@ def login():
 
     conn = sqlite3.connect('meal_mentors.db')
     cursor = conn.cursor()
-    
-    # check if user exists in the database
-    cursor.execute("SELECT * FROM users WHERE username = ? AND password_hash = ?", (username, password))
+    # Add role to the SELECT statement
+    cursor.execute("SELECT id, password, role FROM users WHERE username = ?", (username,))
     user = cursor.fetchone()
     conn.close()
 
-    if user:
-        return jsonify({"status": "success", "message": "Login successful!"}), 200
+    if user and user[1] == password:
+        return jsonify({
+            "status": "success", 
+            "message": "Login successful",
+            "user_id": user[0],
+            "role": user[2] # Send role back to React
+        }), 200
     else:
-        return jsonify({"status": "error", "message": "Invalid username or password"}), 401
+        return jsonify({"status": "error", "message": "Invalid credentials"}), 401
 
 # New Registration Endpoint
 @app.route('/register', methods=['POST'])
@@ -45,7 +49,7 @@ def register():
     
     try:
         # insert the new user into the database
-        cursor.execute("INSERT INTO users (username, password_hash) VALUES (?, ?)", (username, password))
+        cursor.execute("INSERT INTO users (username, password) VALUES (?, ?)", (username, password))
         conn.commit()
         response = jsonify({"status": "success", "message": "Account created."})
         return response, 201
