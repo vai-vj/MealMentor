@@ -1,11 +1,37 @@
-import React from "react";
+import React, { useState } from "react";
 import { useLocation, useNavigate } from "react-router-dom";
 
 function RecipeDetail() {
   const location = useLocation();
   const navigate = useNavigate();
+  const [saveMessage, setSaveMessage] = useState("");
 
   const recipe = location.state?.recipe;
+
+  const handleSaveRecipe = async () => {
+    const userId = localStorage.getItem('mealMentorUserId');
+    
+    if (!userId) {
+      setSaveMessage("Please log in first!");
+      return;
+    }
+
+    try {
+      const response = await fetch("http://127.0.0.1:5000/track-recipe", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({ user_id: userId, recipe_id: recipe.id }),
+      });
+
+      const data = await response.json();
+      setSaveMessage(data.message);
+    } catch (error) {
+      console.error(error);
+      setSaveMessage("Failed to connect to backend.");
+    }
+  };
 
   if (!recipe) {
     return <div>No recipe data found.</div>;
@@ -32,21 +58,41 @@ function RecipeDetail() {
           boxShadow: "0 8px 20px rgba(95, 52, 14, 0.08)",
         }}
       >
-        <button
-          onClick={() => navigate(-1)}
-          style={{
-            marginBottom: "20px",
-            padding: "10px 16px",
-            background: "linear-gradient(90deg, #674303, #664400)",
-            color: "white",
-            border: "none",
-            borderRadius: "10px",
-            fontWeight: "bold",
-            cursor: "pointer",
-          }}
-        >
-          Back
-        </button>
+        <div style={{ display: "flex", gap: "15px", marginBottom: "20px" }}>
+          <button
+            onClick={() => navigate(-1)}
+            style={{
+              padding: "10px 16px",
+              background: "transparent",
+              color: "#674303",
+              border: "2px solid #674303",
+              borderRadius: "10px",
+              fontWeight: "bold",
+              cursor: "pointer",
+            }}
+          >
+            Back
+          </button>
+          
+          <button
+            onClick={handleSaveRecipe}
+            style={{
+              padding: "10px 16px",
+              background: "linear-gradient(90deg, #674303, #664400)",
+              color: "white",
+              border: "none",
+              borderRadius: "10px",
+              fontWeight: "bold",
+              cursor: "pointer",
+            }}
+          >
+            Save Recipe
+          </button>
+          
+          <span style={{ alignSelf: "center", color: "#5f340e", fontWeight: "bold" }}>
+            {saveMessage}
+          </span>
+        </div>
 
         <h1 style={{ color: "#5f340e", marginBottom: "20px" }}>{recipe.title}</h1>
 
@@ -71,9 +117,6 @@ function RecipeDetail() {
             color: "#7a5634",
           }}
         >
-          <div><strong>Prep Time:</strong> {recipe.prepTime}</div>
-          <div><strong>Cook Time:</strong> {recipe.cookTime}</div>
-          <div><strong>Total Time:</strong> {recipe.totalTime}</div>
           <div><strong>Servings:</strong> {recipe.servings || "--"}</div>
         </div>
 

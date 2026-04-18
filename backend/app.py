@@ -68,10 +68,12 @@ def get_recipes():
     conn.row_factory = sqlite3.Row
     cursor = conn.cursor()
 
+    # Add LIMIT 8 to stop from loading all of the recipes
     cursor.execute("""
         SELECT id, name, ingredients, ingredients_raw, steps, servings, serving_size, tags
         FROM recipes
-        ORDER BY id
+        ORDER BY RANDOM()
+        LIMIT 8
     """)
     rows = cursor.fetchall()
     conn.close()
@@ -86,7 +88,7 @@ def get_recipes():
         recipes.append({
             "id": row["id"],
             "title": row["name"],
-            "image": "https://via.placeholder.com/300x220",
+            "image": "https://placehold.co/300x220",
             "prepTime": "N/A",
             "cookTime": "N/A",
             "totalTime": "N/A",
@@ -123,7 +125,7 @@ def get_recipe_by_id(recipe_id):
     recipe = {
         "id": row["id"],
         "title": row["name"],
-        "image": "https://via.placeholder.com/300x220",
+        "image": "https://placehold.co/300x220",
         "prepTime": "N/A",
         "cookTime": "N/A",
         "totalTime": "N/A",
@@ -135,6 +137,30 @@ def get_recipe_by_id(recipe_id):
     }
 
     return jsonify(recipe), 200
+
+@app.route('/track-recipe', methods=['POST'])
+def track_recipe():
+    data = request.get_json()
+    user_id = data.get('user_id')
+    recipe_id = data.get('recipe_id')
+
+    if not user_id or not recipe_id:
+        return jsonify({"status": "error", "message": "Missing user_id or recipe_id"}), 400
+
+    conn = sqlite3.connect('meal_mentors.db')
+    cursor = conn.cursor()
+    try:
+        # Inserts the saved recipe into the tracking table
+        cursor.execute("INSERT INTO user_saved_recipes (user_id, recipe_id, status) VALUES (?, ?, ?)", 
+                       (user_id, recipe_id, 'saved'))
+        conn.commit()
+        response = {"status": "success", "message": "Recipe saved to your account!"}
+    except Exception as e:
+        response = {"status": "error", "message": str(e)}
+    finally:
+        conn.close()
+
+    return jsonify(response), 200
 
 if __name__ == '__main__':
     app.run(debug=True)
