@@ -9,17 +9,33 @@ function AdminPage() {
     fetch("http://127.0.0.1:5000/admin/recipes")
       .then((res) => res.json())
       .then((data) => {
-        console.log("ADMIN DATA:", data);
-        setRecipes(data);
+        const formatted = data.map(recipe => ({
+          ...recipe,
+          active: recipe.active === 1 //convert to boolean
+        }));
+        console.log("ADMIN DATA:", formatted);
+        setRecipes(formatted);
       })
       .catch((err) => console.error("Error:", err));
   }, []);
 
-  const handleLogout = () => {
-    localStorage.removeItem("mealMentorUserId");
-    localStorage.removeItem("mealMentorUserRole");
-    navigate("/");
-  };
+  const handleToggle = async (id) => {
+  try {
+    await fetch(`http://127.0.0.1:5000/admin/toggle-recipe/${id}`, {
+      method: "POST",
+    });
+
+    // refresh current page
+    setRecipes(prev =>
+      prev.map(r =>
+        r.id === id ? { ...r, active: !r.active } : r
+      )
+    );
+
+  } catch (err) {
+    console.error(err);
+  }
+};
 
   const thStyle = {
     padding: "12px",
@@ -120,7 +136,22 @@ function AdminPage() {
             
             {recipes.map((recipe) => (
               <tr key={recipe.id}>
-                <td style={tdStyle}>Active</td>
+                <td style={tdStyle}>
+                  <button
+                    onClick={() => handleToggle(recipe.id)}
+                    style={{
+                      padding: "6px 10px",
+                      borderRadius: "8px",
+                      border: "none",
+                      cursor: "pointer",
+                      backgroundColor: recipe.active ? "#4CAF50" : "#ccc",
+                      color: "white",
+                      fontWeight: "bold"
+                    }}
+                  >
+                    {recipe.active ? "Active" : "Inactive"}
+                  </button>
+                </td>
                 <td style={tdStyle}>{recipe.id}</td>
                 <td style={tdStyle}>{recipe.title}</td>
                 <td style={tdStyle}>

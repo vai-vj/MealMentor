@@ -72,9 +72,11 @@ def get_recipes():
     cursor = conn.cursor()
 
     # Add LIMIT 8 to stop from loading all of the recipes
+    # Only active recipes (is_active = 1) will be shown
     cursor.execute("""
-        SELECT id, name, ingredients, ingredients_raw, steps, servings, serving_size, tags
+        SELECT id, name, ingredients, ingredients_raw, steps, servings, serving_size, tags, is_active
         FROM recipes
+        WHERE is_active = 1
         ORDER BY RANDOM()
         LIMIT 8
     """)
@@ -104,7 +106,8 @@ def get_recipes():
             "steps": steps,
             "servings": row["servings"],
             "servingSize": row["serving_size"],
-            "tags": tags
+            "tags": tags,
+            "active": row["is_active"]
         })
     #print("DB PATH /recipes:", os.path.abspath("meal_mentors.db"))
     
@@ -173,16 +176,21 @@ def track_recipe():
 
 @app.route('/admin/recipes', methods=['GET'])
 def get_all_recipes():
+    page = int(request.args.get('page', 1))
+    limit = 50
+    offset = (page - 1) * limit
+
+
     conn = sqlite3.connect('meal_mentors.db')
     conn.row_factory = sqlite3.Row
     cursor = conn.cursor()
 
     cursor.execute("""
-        SELECT id, name, ingredients, ingredients_raw, steps, servings, serving_size, tags
+        SELECT id, name, ingredients, ingredients_raw, steps, servings, serving_size, tags, is_active
         FROM recipes
         ORDER BY id ASC
-        LIMIT 50    
-    """)
+        LIMIT ? OFFSET ?    
+    """, (limit, offset))
 
     rows = cursor.fetchall()
 
@@ -213,12 +221,30 @@ def get_all_recipes():
             "steps": steps,
             "servings": row["servings"],
             "servingSize": row["serving_size"],
-            "tags": tags
+            "tags": tags,
+            "active": row["is_active"]
         })
 
     # print("DB PATH /admin/recipes:", os.path.abspath("meal_mentors.db"))
     
     return jsonify(recipes), 200
+
+@app.route('/admin/toggle-recipe/<int:recipe_id>', methods=['POST'])
+def toggle_recipe(recipe_id):
+    conn = sqlite3.connect('meal_mentors.db')
+    cursor = conn.cursor()
+
+    # flip value
+    cursor.execute("""
+        UPDATE recipes
+        SET is_active = CASE WHEN is_active = 1 THEN 0 ELSE 1 END
+        WHERE id = ?
+    """, (recipe_id,))
+
+    conn.commit()
+    conn.close()
+
+    return jsonify({"message": "Recipe status updated"}), 200
 
 if __name__ == '__main__':
     app.run(debug=True)
