@@ -1,38 +1,16 @@
+import React, { useState, useEffect } from "react";
+import { useNavigate } from "react-router-dom";
+
 function CookingPath() {
-  const recipes = [
-    {
-      id: 1,
-      title: "Recipe Title",
-      image: "https://via.placeholder.com/300x220",
-      prepTime: "15 min",
-      cookTime: "25 min",
-      totalTime: "40 min",
-    },
-    {
-      id: 2,
-      title: "Recipe Title",
-      image: "https://via.placeholder.com/300x220",
-      prepTime: "10 min",
-      cookTime: "20 min",
-      totalTime: "30 min",
-    },
-    {
-      id: 3,
-      title: "Recipe Title",
-      image: "https://via.placeholder.com/300x220",
-      prepTime: "20 min",
-      cookTime: "15 min",
-      totalTime: "35 min",
-    },
-    {
-      id: 4,
-      title: "Recipe Title",
-      image: "https://via.placeholder.com/300x220",
-      prepTime: "12 min",
-      cookTime: "18 min",
-      totalTime: "30 min",
-    },
-  ];
+  const [recipes, setRecipes] = useState([]);
+  const navigate = useNavigate();
+
+  useEffect(() => {
+    fetch("http://127.0.0.1:5000/recipes")
+      .then((response) => response.json())
+      .then((data) => setRecipes(data))
+      .catch((error) => console.error("Error fetching recipes:", error));
+  }, []);
 
   return (
     <div
@@ -95,30 +73,8 @@ function CookingPath() {
                   {recipe.title}
                 </h2>
 
-                <div
-                  style={{
-                    display: "grid",
-                    gridTemplateColumns: "1fr 1fr",
-                    gap: "12px",
-                    color: "#7a5634",
-                    fontSize: "15px",
-                  }}
-                >
-                  <div>
-                    <strong>Prep:</strong> {recipe.prepTime}
-                  </div>
-                  <div>
-                    <strong>Cook:</strong> {recipe.cookTime}
-                  </div>
-                  <div>
-                    <strong>Total:</strong> {recipe.totalTime}
-                  </div>
-                  <div>
-                    <strong>Yield:</strong> --
-                  </div>
-                </div>
-
                 <button
+                  onClick={() => navigate('/recipe-detail', { state: { recipe } })}
                   style={{
                     marginTop: "20px",
                     width: "100%",
