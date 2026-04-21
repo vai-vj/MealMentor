@@ -76,9 +76,8 @@ python -m venv venv
 venv\Scripts\activate        # Windows
 # source venv/bin/activate   # Mac/Linux
 
-python setup-db.py
-
 pip install -r requirements.txt
+python setup-db.py
 python app.py
 ```
 ### 3. Frontend Setup
